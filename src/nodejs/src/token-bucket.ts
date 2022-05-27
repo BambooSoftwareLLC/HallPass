@@ -9,6 +9,8 @@ export class TokenBucket {
     private periodUnits: "seconds" | "minutes" | "hours"
   ) {
     this.periodDurationMilliseconds = periodDuration * 1000;
+    if (periodUnits == "minutes") this.periodDurationMilliseconds *= 60;
+    else if (periodUnits == "hours") this.periodDurationMilliseconds *= 60 * 60;
   }
 
   public async getTicket() {
