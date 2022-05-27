@@ -14,8 +14,6 @@ export class TokenBucket {
   }
 
   public async getTicket() {
-    // todo
-
     // check if capacity available
     //  - if yes, resolve
     if (this.currentCapacity > 0) {
