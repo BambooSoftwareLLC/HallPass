@@ -11,17 +11,15 @@ namespace HallPass
         private readonly ConcurrentQueue<Guid> _refillQueue = new ConcurrentQueue<Guid>();
         
         private readonly ITimeService _timeService;
-        private readonly ITaskDelayer _taskDelayer;
 
         private readonly int _periodDurationMilliseconds;
         private readonly int _requestsPerPeriod;
         private DateTimeOffset _lastRefill = DateTimeOffset.MinValue;
 
-        public TokenBucket(int requestsPerPeriod, int periodDuration, TimeUnit timeUnit, ITimeService timeService, ITaskDelayer taskDelayer)
+        public TokenBucket(int requestsPerPeriod, int periodDuration, TimeUnit timeUnit, ITimeService timeService)
         {
             _requestsPerPeriod = requestsPerPeriod;
             _timeService = timeService;
-            _taskDelayer = taskDelayer;
 
             var periodDurationMilliseconds = periodDuration * 1000;
             if (timeUnit.Equals(TimeUnit.Minutes)) periodDurationMilliseconds *= 60;
@@ -49,19 +47,19 @@ namespace HallPass
             // peek the refill queue in a loop, waiting for the calculated wait time between each loop
             var waitTime = GetWaitTime();
             if (waitTime > TimeSpan.Zero)
-                await _taskDelayer.DelayAsync(waitTime, cancellationToken);
+                await _timeService.DelayAsync(waitTime, cancellationToken);
 
             while (_refillQueue.TryPeek(out var nextToken) && !nextToken.Equals(token))
             {
                 waitTime = GetWaitTime();
                 if (waitTime > TimeSpan.Zero)
-                    await _taskDelayer.DelayAsync(waitTime, cancellationToken);
+                    await _timeService.DelayAsync(waitTime, cancellationToken);
             }
 
             // if myself is next, wait for the remaining wait time
             waitTime = GetWaitTime();
             if (waitTime > TimeSpan.Zero)
-                await _taskDelayer.DelayAsync(waitTime, cancellationToken);
+                await _timeService.DelayAsync(waitTime, cancellationToken);
 
             // refill the tickets
             for (int i = 0; i < _requestsPerPeriod; i++)
