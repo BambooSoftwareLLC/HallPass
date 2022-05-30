@@ -1,7 +1,18 @@
-﻿namespace HallPass
+﻿using System;
+
+namespace HallPass
 {
     internal class Ticket
     {
-        public static Ticket Blank { get; }
+        public Ticket(DateTimeOffset validFrom, DateTimeOffset validTo)
+        {
+            ValidFrom = validFrom;
+            ValidTo = validTo;
+        }
+
+        public DateTimeOffset ValidFrom { get; }
+        public DateTimeOffset ValidTo { get; }
+
+        internal static Ticket New(DateTimeOffset validFrom, DateTimeOffset validTo) => new Ticket(validFrom, validTo);
     }
 }

@@ -8,23 +8,20 @@ namespace HallPass
     internal class TokenBucket : IBucket
     {
         private readonly ConcurrentQueue<Ticket> _tickets = new ConcurrentQueue<Ticket>();
-        private readonly ConcurrentQueue<Guid> _refillQueue = new ConcurrentQueue<Guid>();
-        
-        private readonly ITimeService _timeService;
 
-        private readonly int _periodDurationMilliseconds;
-        private readonly int _requestsPerPeriod;
+        private static int _refilling = 0;
+        
         private DateTimeOffset _lastRefill = DateTimeOffset.MinValue;
 
-        public TokenBucket(int requestsPerPeriod, int periodDuration, TimeUnit timeUnit, ITimeService timeService)
+        private readonly int _requestsPerPeriod;
+        private readonly TimeSpan _periodDuration;
+        private readonly ITimeService _timeService;
+
+        public TokenBucket(int requestsPerPeriod, TimeSpan periodDuration, ITimeService timeService)
         {
             _requestsPerPeriod = requestsPerPeriod;
+            _periodDuration = periodDuration;
             _timeService = timeService;
-
-            var periodDurationMilliseconds = periodDuration * 1000;
-            if (timeUnit.Equals(TimeUnit.Minutes)) periodDurationMilliseconds *= 60;
-            if (timeUnit.Equals(TimeUnit.Hours)) periodDurationMilliseconds *= 60 * 60;
-            _periodDurationMilliseconds = periodDurationMilliseconds;
         }
 
         public async Task<Ticket> GetTicketAsync(CancellationToken cancellationToken = default)
@@ -32,55 +29,42 @@ namespace HallPass
             Ticket ticket;
             while (!_tickets.TryDequeue(out ticket))
             {
-                await RefillAsync(cancellationToken);
+                Refill();
             }
+
+            if (IsNotYetValid(ticket))
+                await _timeService.DelayAsync(TimeUntilValid(ticket), cancellationToken);
 
             return ticket;
         }
 
-        private async Task RefillAsync(CancellationToken cancellationToken = default)
+        private TimeSpan TimeUntilValid(Ticket ticket) => ticket.ValidFrom - _timeService.GetNow();
+
+        private bool IsNotYetValid(Ticket ticket) => TimeUntilValid(ticket) > TimeSpan.Zero;
+
+        private void Refill()
         {
-            // add myself to the refill queue
-            var token = Guid.NewGuid();
-            _refillQueue.Enqueue(token);
+            // if somebody else is already refilling, then exit early
+            if (0 != Interlocked.Exchange(ref _refilling, 1))
+                return;
 
-            // peek the refill queue in a loop, waiting for the calculated wait time between each loop
-            var waitTime = GetWaitTime();
-            if (waitTime > TimeSpan.Zero)
-                await _timeService.DelayAsync(waitTime, cancellationToken);
+            // if wait time is negative, then just use zero
+            var waitTime = _lastRefill + _periodDuration - _timeService.GetNow();
+            waitTime = waitTime.TotalMilliseconds < 0 ? TimeSpan.Zero : waitTime;
 
-            while (_refillQueue.TryPeek(out var nextToken) && !nextToken.Equals(token))
-            {
-                waitTime = GetWaitTime();
-                if (waitTime > TimeSpan.Zero)
-                    await _timeService.DelayAsync(waitTime, cancellationToken);
-            }
-
-            // if myself is next, wait for the remaining wait time
-            waitTime = GetWaitTime();
-            if (waitTime > TimeSpan.Zero)
-                await _timeService.DelayAsync(waitTime, cancellationToken);
-
-            // refill the tickets
+            // refill the tickets bucket
+            var validFrom = waitTime > TimeSpan.Zero ? _timeService.GetNow() + waitTime : _timeService.GetNow();
+            var validTo = validFrom + _periodDuration;
             for (int i = 0; i < _requestsPerPeriod; i++)
             {
-                _tickets.Enqueue(Ticket.Blank);
+                _tickets.Enqueue(Ticket.New(validFrom, validTo));
             }
 
-            // modify timestamp for last refill
-            _lastRefill = _timeService.GetNow();
+            // update the time of last refill
+            _lastRefill = validFrom;
 
-            // dequeue self from refill queue
-            _refillQueue.TryDequeue(out var _);
-        }
-
-        private TimeSpan GetWaitTime()
-        {
-            // if negative, return 0
-            var waitTime = _lastRefill.AddMilliseconds(_periodDurationMilliseconds) - _timeService.GetNow();
-            return waitTime.TotalSeconds < 0
-                ? TimeSpan.Zero
-                : waitTime;
+            // release the lock
+            Interlocked.Exchange(ref _refilling, 0);
         }
     }
 }

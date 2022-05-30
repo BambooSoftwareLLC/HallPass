@@ -1,9 +1,10 @@
-﻿namespace HallPass
+﻿using System;
+
+namespace HallPass
 {
     public interface IPolicy
     {
         int Requests { get; }
-        int Duration { get; }
-        TimeUnit TimeUnit { get; }
+        TimeSpan Duration { get; }
     }
 }
