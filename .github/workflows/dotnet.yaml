@@ -13,7 +13,7 @@ jobs:
 
       - run: dotnet restore
       - run: dotnet build -c Release
-      - run: dotnet test --no-build
+      - run: dotnet test
 
 
   get_version:
