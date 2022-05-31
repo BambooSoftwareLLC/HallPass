@@ -71,7 +71,7 @@ jobs:
         uses: HarmvZ/set-package-json-version-action@v0.1.2
         with:
           version: ${{ steps.bump-version.outputs.version }}
-          path: src/nodejs/package.json
+          path: src/nodejs
 
       - name: update git with updated version
         if: ${{ steps.package-version.outputs.version == steps.published-version.outputs.latestVersion }}
