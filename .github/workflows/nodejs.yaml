@@ -51,8 +51,13 @@ jobs:
         id: published-version
         uses: Bruce17/ghaction-package-latest-version@v1.1.2
         with:
-          package: eslint
+          package: HallPass
           language: node
+
+      - name: print versions
+        run: |
+          echo "Package: ${{ steps.package-version.outputs.current-version }}"
+          echo "NPM: ${{ steps.published-version.outputs.latestVersion }}"
 
       - name: bump version
         id: bump-version
