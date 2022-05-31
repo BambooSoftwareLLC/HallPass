@@ -36,8 +36,40 @@ jobs:
   get_version:
     runs-on: ubuntu-latest
     if: contains(github.ref, '/master')
+    outputs:
+      version: ${{ steps.update-version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
+
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.2.3
+        with:
+          path: src/nodejs/package.json
+
+      - name: get latest published version
+        id: published-version
+        uses: Bruce17/ghaction-package-latest-version@v1.1.2
+        with:
+          package: eslint
+          language: node
+
+      - name: bump version
+        id: bump-version
+        if: ${{ steps.package-version.outputs.current-version == steps.published-version.outputs.latestVersion }}
+        uses: olegsu/semver-action@v1
+        with:
+          version: ${{ steps.package-version.outputs.current-version }}
+
+      - name: update version in package.json
+        id: update-version
+        uses: KageKirin/set-node-package-version@v0
+        with:
+          version: ${{ steps.bump-version.outputs.version }}
+
+      - name: update git with updated version
+        if: ${{ steps.package-version.outputs.current-version == steps.published-version.outputs.latestVersion }}
+        uses: stefanzweifel/git-auto-commit-action@v4
 
 
   publish:
@@ -46,6 +78,9 @@ jobs:
     if: contains(github.ref, '/master')
     steps:
       - uses: actions/checkout@v3
+
+      - run: |
+          echo "version: ${{ needs.get_version.outputs.version }}"
 
       - uses: actions/download-artifact@v3
         with:
