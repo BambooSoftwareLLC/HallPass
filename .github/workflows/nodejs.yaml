@@ -27,6 +27,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - run: |
+          npm ci
+          npm run test
+        working-directory: src/nodejs
+
   
   get_version:
     runs-on: ubuntu-latest
