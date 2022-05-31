@@ -74,13 +74,15 @@ jobs:
     needs: [build_and_test, get_version]
     if: contains(github.ref, '/master')
     steps:
-      - run: echo ${{ needs.get_version.outputs.version }}
+      - uses: actions/checkout@v3
+
+      - run: echo "VERSION: ${{ needs.get_version.outputs.version }}"
       
-      - name: download build artifact
-        run: echo "not implemented"
-
-      - name: create nuget package
-        run: echo "not implemented"
-
-      - name: publish package
-        run: echo "not implemented"
+      - name: publish to nuget
+        uses: brandedoutcast/publish-nuget@v2.5.5
+        with:
+          PROJECT_FILE_PATH: src/dotnet/HallPass/HallPass/HallPass.csproj
+          BUILD_CONFIGURATION: Release
+          PACKAGE_NAME: HallPass
+          VERSION_STATIC: ${{ needs.get_version.outputs.version }}
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
