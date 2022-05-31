@@ -32,7 +32,7 @@ namespace HallPass.UnitTests
         [Fact]
         public async Task GetTicketAsync___should_allow_10_requests_in_90_seconds_with_TokenBucket_allowing_5_requests_per_minute()
         {
-            var timeService = new AcceleratedTimeService(500);
+            var timeService = new AcceleratedTimeService(200);
             var bucket = new TokenBucket(5, TimeSpan.FromMinutes(1), timeService);
 
             var spy = new List<DateTimeOffset>();
@@ -70,7 +70,7 @@ namespace HallPass.UnitTests
         [Fact]
         public async Task GetTicketAsync___should_work_for_multiple_threads()
         {
-            var timeService = new AcceleratedTimeService(500);
+            var timeService = new AcceleratedTimeService(200);
             var bucket = new TokenBucket(5, TimeSpan.FromMinutes(1), timeService);
 
             var spy = new ConcurrentBag<DateTimeOffset>();
