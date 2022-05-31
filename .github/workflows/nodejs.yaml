@@ -8,9 +8,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - run: npm run build
-        with:
-          working-directory: src/nodejs
+      - run: |
+          npm ci
+          npm run build
+        working-directory: src/nodejs
 
       - name: save build artifacts for later step
         if: contains(github.ref, '/master')
