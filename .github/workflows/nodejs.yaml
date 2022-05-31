@@ -64,9 +64,9 @@ jobs:
       - name: update version in package.json
         id: update-version
         uses: KageKirin/set-node-package-version@v1.0.0
-        working-directory: src/nodejs
         with:
           version: ${{ steps.bump-version.outputs.version }}
+          working-directory: src/nodejs
 
       - name: update git with updated version
         if: ${{ steps.package-version.outputs.current-version == steps.published-version.outputs.latestVersion }}
