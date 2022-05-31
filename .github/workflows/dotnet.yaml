@@ -76,7 +76,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - run: echo "VERSION: ${{ needs.get_version.outputs.version }}"
+      - run: |
+          echo "VERSION: ${{ needs.get_version.outputs.version }}"
       
       - name: publish to nuget
         uses: brandedoutcast/publish-nuget@v2.5.5
