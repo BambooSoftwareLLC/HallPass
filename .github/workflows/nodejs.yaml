@@ -108,6 +108,11 @@ jobs:
           cp LICENSE ./package
           cp dist ./package -r
 
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+          registry-url: 'https://registry.npmjs.org'
+
       - name: publish to NPM
         run: npm publish
         working-directory: package
