@@ -78,12 +78,6 @@ jobs:
 
       - run: |
           echo "VERSION: ${{ needs.get_version.outputs.version }}"
-      
-      - name: publish to nuget
-        uses: brandedoutcast/publish-nuget@v2.5.5
-        with:
-          PROJECT_FILE_PATH: src/dotnet/HallPass/HallPass/HallPass.csproj
-          BUILD_CONFIGURATION: Release
-          PACKAGE_NAME: HallPass
-          VERSION_STATIC: ${{ needs.get_version.outputs.version }}
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+
+      - run: dotnet pack -c Release -o . src/dotnet/HallPass/HallPass/HallPass.csproj
+      - run: dotnet nuget push *.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
