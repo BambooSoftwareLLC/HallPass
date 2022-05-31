@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.ref, '/master')
     outputs:
-      version: ${{ steps.get-version.outputs.version }}
+      version: ${{ steps.get-final-version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
 
@@ -62,9 +62,11 @@ jobs:
         if: ${{ steps.get-version.outputs.version == steps.get-published-version.outputs.published-version }}
         uses: stefanzweifel/git-auto-commit-action@v4
 
-      - name: exit early after updating version in git
-        if: ${{ steps.get-version.outputs.version == steps.get-published-version.outputs.published-version }}
-        run: exit 1
+      - name: get final version
+        uses: kzrnm/get-net-sdk-project-versions-action@v1.1.1
+        id: get-final-version
+        with:
+          proj-path: src/dotnet/HallPass/HallPass/HallPass.csproj
 
 
   pack_and_publish:
@@ -72,8 +74,7 @@ jobs:
     needs: [build_and_test, get_version]
     if: contains(github.ref, '/master')
     steps:
-      - name: download version artifact
-        run: echo "not implemented"
+      - run: echo ${{ needs.get_version.outputs.version }}
       
       - name: download build artifact
         run: echo "not implemented"
