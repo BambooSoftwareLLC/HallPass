@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.ref, '/master')
     outputs:
-      version: ${{ steps.final-version.outputs.current-version }}
+      version: ${{ steps.final-version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
 
@@ -106,3 +106,9 @@ jobs:
           cp src/nodejs/README.md ./package
           cp LICENSE ./package
           cp dist ./package -r
+
+      - name: publish to NPM
+        run: npm publish
+        working-directory: package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
