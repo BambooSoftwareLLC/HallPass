@@ -68,6 +68,7 @@ jobs:
 
       - name: update version in package.json
         id: update-version
+        if: ${{ steps.package-version.outputs.version == steps.published-version.outputs.latestVersion }}
         uses: HarmvZ/set-package-json-version-action@v0.1.2
         with:
           version: ${{ steps.bump-version.outputs.version }}
