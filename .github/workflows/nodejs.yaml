@@ -37,11 +37,11 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.ref, '/master')
     outputs:
-      version: ${{ steps.update-version.outputs.version }}
+      version: ${{ steps.final-version.outputs.current-version }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: get-npm-version
+      - name: get-package-version
         id: package-version
         uses: martinbeentjes/npm-get-version-action@v1.2.3
         with:
@@ -63,14 +63,20 @@ jobs:
 
       - name: update version in package.json
         id: update-version
-        uses: KageKirin/set-node-package-version@v1.0.0
+        uses: HarmvZ/set-package-json-version-action@v0.1.2
         with:
           version: ${{ steps.bump-version.outputs.version }}
-          working-directory: src/nodejs
+          path: src/nodejs/package.json
 
       - name: update git with updated version
         if: ${{ steps.package-version.outputs.current-version == steps.published-version.outputs.latestVersion }}
         uses: stefanzweifel/git-auto-commit-action@v4
+
+      - name: get-final-version
+        id: final-version
+        uses: martinbeentjes/npm-get-version-action@v1.2.3
+        with:
+          path: src/nodejs/package.json
 
 
   publish:
