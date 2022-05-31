@@ -45,7 +45,7 @@ jobs:
         id: package-version
         uses: stevenbenitez/get-package-version-action@v1
         with:
-          path: src/nodejs/package.json
+          path: src/nodejs
 
       - name: get latest published version
         id: published-version
@@ -81,7 +81,7 @@ jobs:
         id: final-version
         uses: stevenbenitez/get-package-version-action@v1
         with:
-          path: src/nodejs/package.json
+          path: src/nodejs
 
 
   publish:
