@@ -8,17 +8,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - run: |
-          npm ci
-          npm run build
-        working-directory: src/nodejs
+      - run: npm ci
+      - run: npm run build
 
       - name: save build artifacts for later step
         if: contains(github.ref, '/master')
         uses: actions/upload-artifact@v3
         with:
           name: dist
-          path: src/nodejs/dist
+          path: dist
           if-no-files-found: error
           retention-days: 1
 
@@ -27,10 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - run: |
-          npm ci
-          npm run test
-        working-directory: src/nodejs
+      - run: npm ci
+      - run: npm run test
 
   
   get_version:
@@ -44,8 +40,6 @@ jobs:
       - name: get-package-version
         id: package-version
         uses: stevenbenitez/get-package-version-action@v1
-        with:
-          path: src/nodejs
 
       - name: get latest published version
         id: published-version
@@ -72,7 +66,6 @@ jobs:
         uses: HarmvZ/set-package-json-version-action@v0.1.2
         with:
           version: ${{ steps.bump-version.outputs.version }}
-          path: src/nodejs
 
       - name: update git with updated version
         if: ${{ steps.package-version.outputs.version == steps.published-version.outputs.latestVersion }}
@@ -81,8 +74,6 @@ jobs:
       - name: get-final-version
         id: final-version
         uses: stevenbenitez/get-package-version-action@v1
-        with:
-          path: src/nodejs
 
 
   publish:
@@ -103,8 +94,8 @@ jobs:
       - name: copy files into package folder
         run: |
           mkdir package
-          cp src/nodejs/package.json ./package
-          cp src/nodejs/README.md ./package
+          cp package.json ./package
+          cp README.md ./package
           cp LICENSE ./package
           cp dist ./package -r
 
