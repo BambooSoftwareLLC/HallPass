@@ -1,6 +1,6 @@
 {
   "name": "hallpass",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Public NodeJS SDK for the HallPass service",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
