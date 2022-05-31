@@ -63,7 +63,8 @@ jobs:
 
       - name: update version in package.json
         id: update-version
-        uses: KageKirin/set-node-package-version@v0
+        uses: KageKirin/set-node-package-version@v1.0.0
+        working-directory: src/nodejs
         with:
           version: ${{ steps.bump-version.outputs.version }}
 
