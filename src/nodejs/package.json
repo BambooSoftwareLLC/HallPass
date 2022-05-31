@@ -3,8 +3,10 @@
   "version": "0.0.1",
   "description": "Public NodeJS SDK for the HallPass service",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc --project tsconfig.build.json"
   },
   "repository": {
     "type": "git",
