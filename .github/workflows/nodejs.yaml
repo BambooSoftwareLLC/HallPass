@@ -51,7 +51,7 @@ jobs:
         id: published-version
         uses: Bruce17/ghaction-package-latest-version@v1.1.2
         with:
-          package: HallPass
+          package: hallpass
           language: node
 
       - name: print versions
