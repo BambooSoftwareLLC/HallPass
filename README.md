@@ -1,4 +1,4 @@
-# HallPass
+# HallPass - PRE-RELEASE
 Client-side rate limiter library for NodeJS to help client-side developers respect the rate limits of the APIs that they consume.
 
 ## Installation
